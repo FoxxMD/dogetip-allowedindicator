@@ -1,4 +1,7 @@
 //wow such code
+//Ported to Chrome by Maxime Kjaer - DOGE donations: D9xQ9V3BqzVcJtUj92immJJYcFsMLmVghq
+//Original code by FoxxMD
+
 
 //Listen for scroll event to minimize impact of the indicator
 window.addEventListener('scroll', makeUnobtrusive, false);
