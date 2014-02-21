@@ -91,7 +91,7 @@ function canTip(subreddit)
     var subredditList = JSON.parse(GM_getValue('dogetipList')),
         tippingStatus = 'Tipping on this subreddit is <b>';
 
-    if(subredditList[subreddit])
+    if(subredditList[subreddit] || subreddit == 'dogecoin')
     {
         tippingStatus = tippingStatus + 'ALLOWED.</b>';
         dogeIndicator.style.border = '3px solid #23b223';
