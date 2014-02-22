@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Dogetip Allowed Subreddits Indicator -- TESTING
+// @name        Dogetip Allowed Subreddits Indicator
 // @description	Shows a DOM indicator that the subreddit currently being views allows/bans tipping
 // @author		FoxxMD
 // @contributor MaximeKjaer
