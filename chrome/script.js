@@ -138,6 +138,7 @@ if (typeof(readCookie("refresh")) === "undefined") {
     }
     xhr.send();
 }
+
 // if it is, we can just use what we've saved.
 else {
     dogetipList = localStorage["dogetipList"];
