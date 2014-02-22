@@ -2,7 +2,8 @@
 	position: fixed;
     left: 2%;
     bottom: 2%;
-    width:250px;
+    width:257px;
+    text-align:center;
     height:auto;
     background-color: rgb(89, 88, 88);
     border-radius: 5px;
@@ -15,14 +16,14 @@
 }
 #dogetip_check.muchSmall
 {
-    bottom:0%;
+    bottom:0;
     max-height:15px;
     overflow-y:hidden;
     border-bottom:none;
     padding: 5px 2px 5px 5px;
     border-bottom: none !important;
-    border-bottom-right-radius:0px;
-    border-bottom-left-radius:0px;
+    border-bottom-right-radius:0;
+    border-bottom-left-radius:0;
     -webkit-transition: 0.1s all;
     -moz-transition: 0.1s all;
     -transition: 0.1s all;
