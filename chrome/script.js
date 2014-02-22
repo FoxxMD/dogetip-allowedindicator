@@ -2,10 +2,6 @@
 //Ported to Chrome by Maxime Kjaer - DOGE donations: D9xQ9V3BqzVcJtUj92immJJYcFsMLmVghq
 //Original code by FoxxMD
 
-
-//Listen for scroll event to minimize impact of the indicator
-window.addEventListener('scroll', makeUnobtrusive, false);
-
 //create a var to hold DOM element for indicator
 //so global very bad
 var dogeIndicator;
@@ -23,7 +19,7 @@ if (!document.getElementById('dogetip_check')) {
     dogeIndicator.style.borderRadius = '5px';
     dogeIndicator.style.padding = '5px 2px 5px 5px';
     dogeIndicator.style.color = "#eaeaea";
-    dogeIndicator.style.zIndex = 9001;
+    dogeIndicator.style.zIndex = 2147483648;
 } else {
     dogeIndicator = document.getElementById('dogetip_check');
 }
@@ -70,7 +66,7 @@ function canTip(subreddit) {
 //style indicator to make it less obtrusive once scrolling begins
 function makeUnobtrusive() {
     //wow such arbitrary
-    if (unsafeWindow.pageYOffset > 100) {
+    if (window.pageYOffset > 100) {
         dogeIndicator.style.top = '0px';
         dogeIndicator.style.maxHeight = '20px';
         dogeIndicator.style.overflowY = 'hidden';
@@ -88,6 +84,7 @@ function makeUnobtrusive() {
 
 //so execute
 //If the subreddit list isn't already in storage make a request to get it
+//We need put dogetipList in a cookie with an expiration date
 xhr = new XMLHttpRequest();
 xhr.open("GET", "http://www.reddit.com/r/dogecoin/wiki/other_subreddit_tipping", true);
 xhr.onreadystatechange = function() {
@@ -117,3 +114,6 @@ xhr.onreadystatechange = function() {
     }
 }
 xhr.send();
+
+//Listen for scroll event to minimize impact of the indicator
+window.addEventListener('scroll', makeUnobtrusive, false);
