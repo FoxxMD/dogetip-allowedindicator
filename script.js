@@ -1,15 +1,15 @@
 // ==UserScript==
-// @name                Dogetip Allowed Subreddits Indicator -- TESTING
-// @description	        Shows a DOM indicator that the subreddit currently being views allows/bans tipping
-// @author				FoxxMD
-// @contributor 		MaximeKjaer
-// @version				0.2
-// @source				https://github.com/FoxxMD/dogetip-allowedindicator
+// @name        Dogetip Allowed Subreddits Indicator -- TESTING
+// @description	Shows a DOM indicator that the subreddit currently being views allows/bans tipping
+// @author		FoxxMD
+// @contributor MaximeKjaer
+// @version		0.2
+// @source		https://github.com/FoxxMD/dogetip-allowedindicator
 // @include		http://reddit.com/r/*
 // @include		http://www.reddit.com/r/*
 // @include		http://*.reddit.com/r/*
-// @resource    suchStyle https://github.com/FoxxMD/dogetip-allowedindicator/blob/master/suchStyle.js
-// @downloadURL https://github.com/FoxxMD/dogetip-allowedindicator/blob/master/script.js
+// @resource    suchStyle https://raw.github.com/FoxxMD/dogetip-allowedindicator/master/suchStyle.css
+// @downloadURL https://raw.github.com/FoxxMD/dogetip-allowedindicator/master/script.js
 // ==/UserScript==
 
 //load css
