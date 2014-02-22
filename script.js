@@ -1,14 +1,22 @@
 // ==UserScript==
-// @name                Dogetip Allowed Subreddits Indicator
+// @name                Dogetip Allowed Subreddits Indicator -- TESTING
 // @description	        Shows a DOM indicator that the subreddit currently being views allows/bans tipping
+// @author				FoxxMD
+// @contributor 		MaximeKjaer
+// @version				0.2
+// @source				https://github.com/FoxxMD/dogetip-allowedindicator
 // @include		http://reddit.com/r/*
 // @include		http://www.reddit.com/r/*
 // @include		http://*.reddit.com/r/*
+// @resource    suchStyle https://github.com/FoxxMD/dogetip-allowedindicator/blob/master/suchStyle.js
+// @downloadURL https://github.com/FoxxMD/dogetip-allowedindicator/blob/master/script.js
 // ==/UserScript==
 
-//wow such code
+//load css
+var suchStyle = GM_getResourceText ("suchStyle");
+GM_addStyle (suchStyle);
 
-//If the subreddit list isn't already in storage make a request to get it
+//If the subreddit list isn't already in storage make a request to fetch it
 if(GM_getValue('dogetipList', null) === null)
 {
     GM_xmlhttpRequest({
@@ -40,33 +48,36 @@ if(GM_getValue('dogetipList', null) === null)
         }
     });
 }
-//Listen for scroll event to minimize impact of the indicator
-window.addEventListener('scroll', makeUnobtrusive, false);
 
 //create a var to hold DOM element for indicator
-//so global very bad
 var dogeIndicator;
 
 if(!document.getElementById('dogetip_check'))
 {
     dogeIndicator = document.createElement('div');
     dogeIndicator.setAttribute('id', 'dogetip_check');
-    //wow such style
-    dogeIndicator.style.position = 'fixed';
-    dogeIndicator.style.right = '100px';
-    dogeIndicator.style.top = '50px';
-    dogeIndicator.style.width = '250px';
-    dogeIndicator.style.height = 'auto';
-    dogeIndicator.style.backgroundColor = '#595858';
-    dogeIndicator.style.borderRadius = '5px';
-    dogeIndicator.style.padding = '5px 2px 5px 5px';
-    dogeIndicator.style.color = "#eaeaea";
-    dogeIndicator.style.zIndex = 9001;
 }
 else
 {
     dogeIndicator = document.getElementById('dogetip_check');
 }
+
+//Add Event Listeners
+//
+//Listen for scroll event to minimize impact of the indicator
+window.addEventListener('scroll', makeUnobtrusive, false);
+
+//Listen for hover, then show regular style
+dogeIndicator.addEventListener('mouseover',
+    function() {
+        if(dogeIndicator.className.indexOf('muchSmall') > 0)
+        {
+            removeClass(dogeIndicator,'muchSmall');
+        }
+    }, false);
+dogeIndicator.addEventListener('mouseout', function() {
+    makeUnobtrusive();
+},false);
 
 //parse current URL and pull subreddit name
 function getCurrentSubreddit()
@@ -79,7 +90,6 @@ function getCurrentSubreddit()
     eIndex = url.indexOf('/',bIndex);
 
     subName = (eIndex == -1 ? url.slice(bIndex) : url.slice(bIndex,eIndex));
-    console.log(subName);
 
     return subName;
 }
@@ -94,18 +104,18 @@ function canTip(subreddit)
     if(subredditList[subreddit] || subreddit == 'dogecoin')
     {
         tippingStatus = tippingStatus + 'ALLOWED.</b>';
-        dogeIndicator.style.border = '3px solid #23b223';
+        dogeIndicator.className += ' soAllowed';
     }
     else if(subredditList[subreddit] === false)
     {
         tippingStatus = tippingStatus + 'BANNED.</b>';
-        dogeIndicator.style.border = '3px solid #f40000';
+        dogeIndicator.className += ' soBanned';
     }
     else if(subredditList[subreddit] == undefined || subredditList[subreddit] == null)
     {
         tippingStatus = tippingStatus + 'THE WILD WEST.</b></br></br> This subreddit has not explicitly stated whether' +
             ' tipping is okay so please be a respectable shibe and use good judgment!';
-        dogeIndicator.style.border = '3px solid #ffba54';
+        dogeIndicator.className += ' soWild';
     }
 
     dogeIndicator.innerHTML = tippingStatus;
@@ -120,24 +130,30 @@ function canTip(subreddit)
 function makeUnobtrusive()
 {
     //wow such arbitrary
-    if(unsafeWindow.pageYOffset > 100)
+    if(window.pageYOffset > 100)
     {
-        dogeIndicator.style.top = '0px';
-        dogeIndicator.style.maxHeight = '20px';
-        dogeIndicator.style.overflowY = 'hidden';
-        dogeIndicator.style.borderTopLeftRadius = '0px';
-        dogeIndicator.style.borderTopRightRadius = '0px';
+        if(dogeIndicator.className.indexOf('muchSmall') < 0)
+        {
+            addClass(dogeIndicator,'muchSmall');
+        }
     }
-    else
+    else if(dogeIndicator.className.indexOf('muchSmall') > 0)
     {
-        dogeIndicator.style.top = '50px';
-        dogeIndicator.style.height = 'auto';
-        dogeIndicator.style.maxHeight = 'none';
-        dogeIndicator.style.overflowY = 'visible';
-        dogeIndicator.style.borderTopLeftRadius = '5px';
-        dogeIndicator.style.borderTopRightRadius = '5px';
+        removeClass(dogeIndicator,'muchSmall');
     }
 }
 
+//such utility
+function removeClass(theObject, theClass)
+{
+    theObject.className = theObject.className.replace(theClass, "");
+}
+function addClass(theObject, theClass)
+{
+    theObject.className += (' ' + theClass);
+}
+
+
 //so execute
+makeUnobtrusive();
 canTip(getCurrentSubreddit());

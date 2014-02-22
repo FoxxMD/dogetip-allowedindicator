@@ -1,0 +1,41 @@
+#dogetip_check {
+	position: fixed;
+    left: 2%;
+    bottom: 2%;
+    width:250px;
+    height:auto;
+    background-color: rgb(89, 88, 88);
+    border-radius: 5px;
+    padding: 5px 2px 5px 5px;
+    color: rgb(234, 234, 234);
+    z-index:9999;
+    -webkit-transition: 0.1s all;
+    -moz-transition: 0.1s all;
+    -transition: 0.1s all;
+}
+#dogetip_check.muchSmall
+{
+    bottom:0%;
+    max-height:15px;
+    overflow-y:hidden;
+    border-bottom:none;
+    padding: 5px 2px 5px 5px;
+    border-bottom: none !important;
+    border-bottom-right-radius:0px;
+    border-bottom-left-radius:0px;
+    -webkit-transition: 0.1s all;
+    -moz-transition: 0.1s all;
+    -transition: 0.1s all;
+}
+#dogetip_check.soWild
+{
+    border:3px solid #ffba54;
+}
+#dogetip_check.soAllowed
+{
+    border:3px solid #23b223;
+}
+#dogetip_check.soBanned
+{
+   border:3px solid #f40000;
+}
