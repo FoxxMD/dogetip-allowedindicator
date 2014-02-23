@@ -3,23 +3,11 @@
 //Original code by FoxxMD
 
 //create a var to hold DOM element for indicator
-//so global very bad
 var dogeIndicator;
 
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
     dogeIndicator.setAttribute('id', 'dogetip_check');
-    //wow such style
-    dogeIndicator.style.position = 'fixed';
-    dogeIndicator.style.right = '100px';
-    dogeIndicator.style.top = '50px';
-    dogeIndicator.style.width = '250px';
-    dogeIndicator.style.height = 'auto';
-    dogeIndicator.style.backgroundColor = '#595858';
-    dogeIndicator.style.borderRadius = '5px';
-    dogeIndicator.style.padding = '5px 2px 5px 5px';
-    dogeIndicator.style.color = "#eaeaea";
-    dogeIndicator.style.zIndex = 2147483648;
 } else {
     dogeIndicator = document.getElementById('dogetip_check');
 }
@@ -34,8 +22,7 @@ function getCurrentSubreddit() {
     eIndex = url.indexOf('/', bIndex);
 
     subName = (eIndex === -1 ? url.slice(bIndex) : url.slice(bIndex, eIndex));
-    console.log(subName);
-
+    
     return subName;
 }
 
@@ -45,15 +32,15 @@ function canTip(subreddit) {
     var subredditList = JSON.parse(dogetipList),
         tippingStatus = 'Tipping on this subreddit is <b>';
 
-    if (subredditList[subreddit] || subreddit === 'dogecoin') {
+    if (subredditList[subreddit] || subreddit == 'dogecoin') {
         tippingStatus = tippingStatus + 'ALLOWED.</b>';
-        dogeIndicator.style.border = '3px solid #23b223';
+        dogeIndicator.className += ' soAllowed';
     } else if (subredditList[subreddit] === false) {
         tippingStatus = tippingStatus + 'BANNED.</b>';
-        dogeIndicator.style.border = '3px solid #f40000';
-    } else if (subredditList[subreddit] === undefined || subredditList[subreddit] === null) {
+        dogeIndicator.className += ' soBanned';
+    } else if (subredditList[subreddit] == undefined || subredditList[subreddit] == null) {
         tippingStatus = tippingStatus + 'THE WILD WEST.</b></br></br> This subreddit has not explicitly stated whether' + ' tipping is okay so please be a respectable shibe and use good judgment!';
-        dogeIndicator.style.border = '3px solid #ffba54';
+        dogeIndicator.className += ' soWild';
     }
 
     dogeIndicator.innerHTML = tippingStatus;
@@ -63,22 +50,24 @@ function canTip(subreddit) {
     }
 }
 
+//such utility
+function removeClass(theObject, theClass) {
+    theObject.className = theObject.className.replace(theClass, "");
+}
+
+function addClass(theObject, theClass) {
+    theObject.className += (' ' + theClass);
+}
+
 //style indicator to make it less obtrusive once scrolling begins
 function makeUnobtrusive() {
     //wow such arbitrary
     if (window.pageYOffset > 100) {
-        dogeIndicator.style.top = '0px';
-        dogeIndicator.style.maxHeight = '20px';
-        dogeIndicator.style.overflowY = 'hidden';
-        dogeIndicator.style.borderTopLeftRadius = '0px';
-        dogeIndicator.style.borderTopRightRadius = '0px';
-    } else {
-        dogeIndicator.style.top = '50px';
-        dogeIndicator.style.height = 'auto';
-        dogeIndicator.style.maxHeight = 'none';
-        dogeIndicator.style.overflowY = 'visible';
-        dogeIndicator.style.borderTopLeftRadius = '5px';
-        dogeIndicator.style.borderTopRightRadius = '5px';
+        if (dogeIndicator.className.indexOf('muchSmall') < 0) {
+            addClass(dogeIndicator, 'muchSmall');
+        }
+    } else if (dogeIndicator.className.indexOf('muchSmall') > 0) {
+        removeClass(dogeIndicator, 'muchSmall');
     }
 }
 
@@ -143,7 +132,21 @@ if (typeof(readCookie("refresh")) === "undefined") {
 else {
     dogetipList = localStorage["dogetipList"];
     canTip(getCurrentSubreddit());
-} 
-    
+}
+
+//Add Event Listeners
+//
 //Listen for scroll event to minimize impact of the indicator
 window.addEventListener('scroll', makeUnobtrusive, false);
+
+//Listen for hover, then show regular style
+dogeIndicator.addEventListener('mouseover',
+
+function() {
+    if (dogeIndicator.className.indexOf('muchSmall') > 0) {
+        removeClass(dogeIndicator, 'muchSmall');
+    }
+}, false);
+dogeIndicator.addEventListener('mouseout', function() {
+    makeUnobtrusive();
+}, false);
