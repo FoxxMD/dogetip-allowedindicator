@@ -3,7 +3,7 @@
 // @description	Shows a DOM indicator that the subreddit currently being views allows/bans tipping
 // @author		FoxxMD
 // @contributor MaximeKjaer
-// @version		0.2
+// @version		0.3
 // @source		https://github.com/FoxxMD/dogetip-allowedindicator
 // @include		http://reddit.com/r/*
 // @include		http://www.reddit.com/r/*
@@ -16,8 +16,12 @@
 var suchStyle = GM_getResourceText ("suchStyle");
 GM_addStyle (suchStyle);
 
+//wow such time
+var d = new Date();
+
+
 //If the subreddit list isn't already in storage make a request to fetch it
-if(GM_getValue('dogetipList', null) === null)
+if(GM_getValue('dogetipList', null) === null || GM_getValue('dogetipListExpiresOn', 0)  < d.getTime())
 {
     GM_xmlhttpRequest({
         method: "GET",
@@ -44,6 +48,7 @@ if(GM_getValue('dogetipList', null) === null)
                 }
                 //so JSON
                 GM_setValue('dogetipList', JSON.stringify(tempSubList));
+                GM_setValue('dogetipListExpiresOn', (d.getTime() + (1000 * 60 * 60 * 24)));
             }
         }
     });
