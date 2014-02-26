@@ -6,13 +6,6 @@
 var dogeIndicator;
 var version = "1.1";
 
-//Check version because of backwards compability issues.
-if (typeof(localStorage["version"]) == "undefined") {
-    deleteCookie("refresh");
-    localStorage["version"] = version;
-}
-
-
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
     dogeIndicator.setAttribute('id', 'dogetip_check');
@@ -111,6 +104,18 @@ function readCookie(name) {
 function deleteCookie(name) {
     document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
+
+
+
+
+
+//Before we execute the XHR:
+//Check version because of backwards compability issues.
+if (typeof(localStorage["version"]) == "undefined") {
+    deleteCookie("refresh");
+    localStorage["version"] = version;
+}
+
 
 
 //so execute
