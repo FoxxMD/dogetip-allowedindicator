@@ -1,6 +1,6 @@
 {
     "name": "Dogetip Allowed Subreddits Indicator",
-    "version": "1.0",
+    "version": "1.1",
     "manifest_version": 2,
     "content_security_policy": "script-src 'self'; object-src 'self'",
  
