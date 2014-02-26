@@ -4,6 +4,14 @@
 
 //create a var to hold DOM element for indicator
 var dogeIndicator;
+var version = "1.1";
+
+//Check version because of backwards compability issues.
+if (typeof(localStorage["version"]) == "undefined") {
+    deleteCookie("refresh");
+    localStorage["version"] = version;
+}
+
 
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
@@ -98,6 +106,10 @@ function readCookie(name) {
             return thisCookie.substring(name.length, thisCookie.length);
         }
     }
+}
+
+function deleteCookie(name) {
+    document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 
