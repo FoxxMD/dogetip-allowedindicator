@@ -4,6 +4,7 @@
 
 //create a var to hold DOM element for indicator
 var dogeIndicator;
+var version = "1.1";
 
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
@@ -12,17 +13,18 @@ if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.getElementById('dogetip_check');
 }
 
+
 //parse current URL and pull subreddit name
 function getCurrentSubreddit() {
     var bIndex,
-        eIndex,
-        url = window.location.href,
+    eIndex,
+    url = window.location.href,
         subName;
     bIndex = url.indexOf('/r/') + 3;
     eIndex = url.indexOf('/', bIndex);
 
     subName = (eIndex === -1 ? url.slice(bIndex) : url.slice(bIndex, eIndex));
-    
+
     return subName.toLowerCase();
 }
 
@@ -58,8 +60,8 @@ function removeClass(theObject, theClass) {
 function addClass(theObject, theClass) {
     theObject.className += (' ' + theClass);
 }
-function persistList(listData)
-{
+
+function persistList(listData) {
     //So JSON! Save the list to a cookie for 5 days
     dogetipList = JSON.stringify(listData);
     localStorage["dogetipList"] = dogetipList;
@@ -99,13 +101,29 @@ function readCookie(name) {
     }
 }
 
+function deleteCookie(name) {
+    document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
+
+
+
+
+
+//Before we execute the XHR:
+//Check version because of backwards compability issues.
+if (typeof(localStorage["version"]) == "undefined") {
+    deleteCookie("refresh");
+    localStorage["version"] = version;
+}
+
+
 
 //so execute
 //If the subreddit list isn't already in storage make a request to get it
 if (typeof(readCookie("refresh")) === "undefined") {
 
     var tempSubList = {},
-        firstDone = false;
+    firstDone = false;
 
     //get list of allowed/banned top 200 subreddits from wiki
     xhr = new XMLHttpRequest();
@@ -134,11 +152,9 @@ if (typeof(readCookie("refresh")) === "undefined") {
                 tempSubList['dogecoin'] = true;
 
                 //ensure list is only updated if both pages have been parsed
-                if(firstDone)
-                {
+                if (firstDone) {
                     persistList(tempSubList);
-                }
-                else{
+                } else {
                     firstDone = true;
                 }
             }
@@ -150,29 +166,26 @@ if (typeof(readCookie("refresh")) === "undefined") {
     dogeRelatedxhr = new XMLHttpRequest();
     dogeRelatedxhr.open("GET", "http://www.reddit.com/r/dogecoin/wiki/index#wiki_dogecoin_related_sub-reddits", true);
     dogeRelatedxhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
+        if (dogeRelatedxhr.readyState == 4) {
             var responseHTML = null;
-            if (xhr.responseText) {
+            if (dogeRelatedxhr.responseText) {
                 responseHTML = new DOMParser()
-                    .parseFromString(xhr.responseText, "text/html");
+                    .parseFromString(dogeRelatedxhr.responseText, "text/html");
                 //such xpath wow very select
                 var subreddits = document.evaluate("//ul[preceding::h3[contains(.,'Dogecoin Related Sub-reddits')]]//a[contains(.,'/r/')]/@href",
-                        responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+                responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
 
                 //iterate through each collection of cells in the DOM table and get subreddit name & tipping permissions
-                for(var i = 0; i < subreddits.snapshotLength; i++)
-                {
+                for (var i = 0; i < subreddits.snapshotLength; i++) {
                     var sRawName = subreddits.snapshotItem(i).value;
-                    var sname = sRawName.slice(sRawName.lastIndexOf("/")+1).toLowerCase();
+                    var sname = sRawName.slice(sRawName.lastIndexOf("/") + 1).toLowerCase();
                     //only add if not already listed(prevents references to /r/gonewild from overriding)
                     tempSubList[sname] = (tempSubList[sname] == undefined ? true : tempSubList[sname]);
                 }
                 //ensure list is only updated if both pages have been parsed
-                if(firstDone)
-                {
+                if (firstDone) {
                     persistList(tempSubList);
-                }
-                else{
+                } else {
                     firstDone = true;
                 }
             }
