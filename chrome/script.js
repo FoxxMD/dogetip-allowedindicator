@@ -2,6 +2,8 @@
 //Ported to Chrome by Maxime Kjaer - DOGE donations: D9xQ9V3BqzVcJtUj92immJJYcFsMLmVghq
 //Original code by FoxxMD
 
+//Still on the to-do: get the XHR on a background page
+
 //create a var to hold DOM element for indicator
 var dogeIndicator;
 var version = "1.1";
@@ -110,7 +112,7 @@ function deleteCookie(name) {
 
 
 //Before we execute the XHR:
-//Check version because of backwards compability issues.
+//Check version because of backwards compatibility issues.
 if (typeof(localStorage["version"]) == "undefined") {
     deleteCookie("refresh");
     localStorage["version"] = version;
