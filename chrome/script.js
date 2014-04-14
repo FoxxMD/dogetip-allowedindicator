@@ -2,9 +2,11 @@
 //Ported to Chrome by Maxime Kjaer - DOGE donations: D9xQ9V3BqzVcJtUj92immJJYcFsMLmVghq
 //Original code by FoxxMD
 
+//Still on the to-do: get the XHR on a background page
+
 //create a var to hold DOM element for indicator
 var dogeIndicator;
-var version = "1.1";
+var version = "1.2";
 
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
@@ -110,7 +112,7 @@ function deleteCookie(name) {
 
 
 //Before we execute the XHR:
-//Check version because of backwards compability issues.
+//Check version because of backwards compatibility issues.
 if (typeof(localStorage["version"]) == "undefined") {
     deleteCookie("refresh");
     localStorage["version"] = version;
@@ -164,23 +166,24 @@ if (typeof(readCookie("refresh")) === "undefined") {
 
     //get list of doge-related subreddits from wiki
     dogeRelatedxhr = new XMLHttpRequest();
-    dogeRelatedxhr.open("GET", "http://www.reddit.com/r/dogecoin/wiki/index#wiki_dogecoin_related_sub-reddits", true);
+    dogeRelatedxhr.open("GET", "http://www.reddit.com/r/dogecoin/wiki/dogesubreddits", true);
     dogeRelatedxhr.onreadystatechange = function() {
         if (dogeRelatedxhr.readyState == 4) {
             var responseHTML = null;
             if (dogeRelatedxhr.responseText) {
                 responseHTML = new DOMParser()
                     .parseFromString(dogeRelatedxhr.responseText, "text/html");
-                //such xpath wow very select
-                var subreddits = document.evaluate("//ul[preceding::h3[contains(.,'Dogecoin Related Sub-reddits')]]//a[contains(.,'/r/')]/@href",
-                responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+                var subreddits = responseHTML.querySelectorAll('.wiki-page-content>.md>ul>li>a[href*="/r/"]');
 
-                //iterate through each collection of cells in the DOM table and get subreddit name & tipping permissions
-                for (var i = 0; i < subreddits.snapshotLength; i++) {
-                    var sRawName = subreddits.snapshotItem(i).value;
-                    var sname = sRawName.slice(sRawName.lastIndexOf("/") + 1).toLowerCase();
-                    //only add if not already listed(prevents references to /r/gonewild from overriding)
-                    tempSubList[sname] = (tempSubList[sname] == undefined ? true : tempSubList[sname]);
+                //iterate through each collection of cells in the DOM table and get subreddit name
+                for (var i = 0; i < subreddits.length; i++) {
+                    var sRawName = subreddits[i].innerText;
+                    if (typeof(sRawName) != 'undefined') {
+                        var sname = sRawName.slice(sRawName.lastIndexOf("/") + 1).toLowerCase();
+                        if (sname != "gonewild") { //We just want to blacklist gonewild, which isn't really on the list, but is mentioned nonetheless.
+                            tempSubList[sname] = true; //If it's there, it's allowed, so no real need to check
+                        }
+                    }
                 }
                 //ensure list is only updated if both pages have been parsed
                 if (firstDone) {
