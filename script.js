@@ -1,22 +1,37 @@
 // ==UserScript==
-// @name                Dogetip Allowed Subreddits Indicator
-// @description	        Shows a DOM indicator that the subreddit currently being views allows/bans tipping
+// @name        Dogetip Allowed Subreddits Indicator
+// @description	Shows a DOM indicator that the subreddit currently being views allows/bans tipping
+// @author		FoxxMD
+// @contributor MaximeKjaer
+// @version		0.4
+// @source		https://github.com/FoxxMD/dogetip-allowedindicator
 // @include		http://reddit.com/r/*
 // @include		http://www.reddit.com/r/*
 // @include		http://*.reddit.com/r/*
+// @resource    suchStyle https://raw.github.com/FoxxMD/dogetip-allowedindicator/master/suchStyle.css
+// @downloadURL https://raw.github.com/FoxxMD/dogetip-allowedindicator/master/script.js
 // ==/UserScript==
 
-//wow such code
+//load css
+var suchStyle = GM_getResourceText ("suchStyle");
+GM_addStyle (suchStyle);
 
-//If the subreddit list isn't already in storage make a request to get it
-if(GM_getValue('dogetipList', null) === null)
+//wow such time
+var d = new Date();
+
+
+//If the subreddit list isn't already in storage make a request to fetch it
+if(GM_getValue('dogetipList', null) === null || GM_getValue('dogetipListExpiresOn', 0)  < d.getTime())
 {
+    var tempSubList = {},
+        firstDone = false;
+    //get list of allowed/banned top 200 subreddits from wiki
     GM_xmlhttpRequest({
         method: "GET",
         url: "http://www.reddit.com/r/dogecoin/wiki/other_subreddit_tipping",
         onload: function(response) {
             var responseHTML = null;
-            if (response.responseText) {
+            if (response.responseText && response.status == 200) {
                 responseHTML = new DOMParser()
                     .parseFromString(response.responseText, "text/html");
                 //such xpath wow very select
@@ -24,49 +39,91 @@ if(GM_getValue('dogetipList', null) === null)
                         responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null),
                     subreddit_allowed = document.evaluate("//table[//thead//th[contains(.,'Subreddit')]]/tbody/tr/td[2]",
                         responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-                var tempSubList = {};
                 //iterate through each collection of cells in the DOM table and get subreddit name & tipping permissions
                 for(var i = 0; i < subreddits.snapshotLength; i++)
                 {
                     var sRawName = subreddits.snapshotItem(i).innerText;
-                    var sname = sRawName.slice(sRawName.lastIndexOf("/")+1);
+                    var sname = sRawName.slice(sRawName.lastIndexOf("/")+1).toLowerCase();
                     //convert "Yes" and "No" to true/false
                     //such bool
                     tempSubList[sname] = (subreddit_allowed.snapshotItem(i).innerText == "Yes");
                 }
-                //so JSON
-                GM_setValue('dogetipList', JSON.stringify(tempSubList));
+                tempSubList['dogecoin'] = true;
+                //ensure list is only updated once both pages are parsed
+                if(firstDone)
+                {
+                    persistList(tempSubList);
+                }
+                else{
+                    firstDone = true;
+                }
             }
         }
     });
+    //get list of doge-related subreddits from wiki
+    GM_xmlhttpRequest({
+        method: "GET",
+        url: "http://www.reddit.com/r/dogecoin/wiki/index#wiki_dogecoin_related_sub-reddits",
+        onload: function(response) {
+            var responseHTML = null;
+            if (response.responseText && response.status == 200) {
+                responseHTML = new DOMParser()
+                    .parseFromString(response.responseText, "text/html");
+                //such xpath wow very select
+                var subreddits = document.evaluate("//ul[preceding::h3[contains(.,'Dogecoin Related Sub-reddits')]]//a[contains(.,'/r/')]/@href",
+                        responseHTML, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+
+                //iterate through each collection of cells in the DOM table and get subreddit name
+                for(var i = 0; i < subreddits.snapshotLength; i++)
+                {
+                    var sRawName = subreddits.snapshotItem(i).value;
+                    var sname = sRawName.slice(sRawName.lastIndexOf("/")+1).toLowerCase();
+                    //only add if not already listed(prevents references to /r/gonewild from overriding)
+                    tempSubList[sname] = (tempSubList[sname] == undefined ? true : tempSubList[sname]);
+                }
+                //ensure list is only updated once both pages are parsed
+                if(firstDone)
+                {
+                    persistList(tempSubList);
+                }
+                else{
+                    firstDone = true;
+                }
+            }
+        }
+    });
+
 }
-//Listen for scroll event to minimize impact of the indicator
-window.addEventListener('scroll', makeUnobtrusive, false);
 
 //create a var to hold DOM element for indicator
-//so global very bad
 var dogeIndicator;
 
 if(!document.getElementById('dogetip_check'))
 {
     dogeIndicator = document.createElement('div');
     dogeIndicator.setAttribute('id', 'dogetip_check');
-    //wow such style
-    dogeIndicator.style.position = 'fixed';
-    dogeIndicator.style.right = '100px';
-    dogeIndicator.style.top = '50px';
-    dogeIndicator.style.width = '250px';
-    dogeIndicator.style.height = 'auto';
-    dogeIndicator.style.backgroundColor = '#595858';
-    dogeIndicator.style.borderRadius = '5px';
-    dogeIndicator.style.padding = '5px 2px 5px 5px';
-    dogeIndicator.style.color = "#eaeaea";
-    dogeIndicator.style.zIndex = 9001;
 }
 else
 {
     dogeIndicator = document.getElementById('dogetip_check');
 }
+
+//Add Event Listeners
+//
+//Listen for scroll event to minimize impact of the indicator
+window.addEventListener('scroll', makeUnobtrusive, false);
+
+//Listen for hover, then show regular style
+dogeIndicator.addEventListener('mouseover',
+    function() {
+        if(dogeIndicator.className.indexOf('muchSmall') > 0)
+        {
+            removeClass(dogeIndicator,'muchSmall');
+        }
+    }, false);
+dogeIndicator.addEventListener('mouseout', function() {
+    makeUnobtrusive();
+},false);
 
 //parse current URL and pull subreddit name
 function getCurrentSubreddit()
@@ -79,40 +136,42 @@ function getCurrentSubreddit()
     eIndex = url.indexOf('/',bIndex);
 
     subName = (eIndex == -1 ? url.slice(bIndex) : url.slice(bIndex,eIndex));
-    console.log(subName);
 
-    return subName;
+    return subName.toLowerCase();
 }
 
 //logic to populate indicator
 function canTip(subreddit)
 {
-    //such JSON
-    var subredditList = JSON.parse(GM_getValue('dogetipList')),
-        tippingStatus = 'Tipping on this subreddit is <b>';
+    if(subreddit !== 'all')
+    {
+        //such JSON
+        var subredditList = JSON.parse(GM_getValue('dogetipList')),
+            tippingStatus = 'Tipping on this subreddit is <b>';
 
-    if(subredditList[subreddit] || subreddit == 'dogecoin')
-    {
-        tippingStatus = tippingStatus + 'ALLOWED.</b>';
-        dogeIndicator.style.border = '3px solid #23b223';
-    }
-    else if(subredditList[subreddit] === false)
-    {
-        tippingStatus = tippingStatus + 'BANNED.</b>';
-        dogeIndicator.style.border = '3px solid #f40000';
-    }
-    else if(subredditList[subreddit] == undefined || subredditList[subreddit] == null)
-    {
-        tippingStatus = tippingStatus + 'THE WILD WEST.</b></br></br> This subreddit has not explicitly stated whether' +
-            ' tipping is okay so please be a respectable shibe and use good judgment!';
-        dogeIndicator.style.border = '3px solid #ffba54';
-    }
+        if(subredditList[subreddit])
+        {
+            tippingStatus = tippingStatus + 'ALLOWED.</b>';
+            dogeIndicator.className += ' soAllowed';
+        }
+        else if(subredditList[subreddit] === false)
+        {
+            tippingStatus = tippingStatus + 'BANNED.</b>';
+            dogeIndicator.className += ' soBanned';
+        }
+        else if(subredditList[subreddit] == undefined || subredditList[subreddit] == null)
+        {
+            tippingStatus = tippingStatus + 'THE WILD WEST.</b></br></br> This subreddit has not explicitly stated whether' +
+                ' tipping is okay so please be a respectable shibe and use good judgment!';
+            dogeIndicator.className += ' soWild';
+        }
 
-    dogeIndicator.innerHTML = tippingStatus;
-    //check if indicator doesn't exist(probably doesn't ever, but better safe than sorry)
-    if(!document.getElementById('dogetip_check'))
-    {
-        document.body.appendChild(dogeIndicator);
+        dogeIndicator.innerHTML = tippingStatus;
+        //check if indicator doesn't exist(probably doesn't ever, but better safe than sorry)
+        if(!document.getElementById('dogetip_check'))
+        {
+            document.body.appendChild(dogeIndicator);
+        }
     }
 }
 
@@ -120,24 +179,36 @@ function canTip(subreddit)
 function makeUnobtrusive()
 {
     //wow such arbitrary
-    if(unsafeWindow.pageYOffset > 100)
+    if(window.pageYOffset > 100)
     {
-        dogeIndicator.style.top = '0px';
-        dogeIndicator.style.maxHeight = '20px';
-        dogeIndicator.style.overflowY = 'hidden';
-        dogeIndicator.style.borderTopLeftRadius = '0px';
-        dogeIndicator.style.borderTopRightRadius = '0px';
+        if(dogeIndicator.className.indexOf('muchSmall') < 0)
+        {
+            addClass(dogeIndicator,'muchSmall');
+        }
     }
-    else
+    else if(dogeIndicator.className.indexOf('muchSmall') > 0)
     {
-        dogeIndicator.style.top = '50px';
-        dogeIndicator.style.height = 'auto';
-        dogeIndicator.style.maxHeight = 'none';
-        dogeIndicator.style.overflowY = 'visible';
-        dogeIndicator.style.borderTopLeftRadius = '5px';
-        dogeIndicator.style.borderTopRightRadius = '5px';
+        removeClass(dogeIndicator,'muchSmall');
     }
 }
 
+//such utility
+function removeClass(theObject, theClass)
+{
+    theObject.className = theObject.className.replace(theClass, "");
+}
+function addClass(theObject, theClass)
+{
+    theObject.className += (' ' + theClass);
+}
+function persistList(listData)
+{
+    //so JSON
+    GM_setValue('dogetipList', JSON.stringify(listData));
+    GM_setValue('dogetipListExpiresOn', (d.getTime() + (1000 * 60 * 60 * 24)));
+}
+
+
 //so execute
+makeUnobtrusive();
 canTip(getCurrentSubreddit());
