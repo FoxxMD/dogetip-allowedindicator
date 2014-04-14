@@ -6,7 +6,7 @@
 
 //create a var to hold DOM element for indicator
 var dogeIndicator;
-var version = "1.1";
+var version = "1.2";
 
 if (!document.getElementById('dogetip_check')) {
     dogeIndicator = document.createElement('div');
